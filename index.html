@@ -371,12 +371,51 @@
     }
 
     @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      .nav-tabs {
+        gap: 8px;
+      }
+      .tab-btn {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        flex: 1 1 40%;
+        justify-content: center;
+      }
       .match-body {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 15px;
       }
       .match-body > div:nth-child(2) {
-        order: -1;
+        order: 2; /* Move score inputs to the middle of the teams */
+      }
+      .team-section {
+        flex-direction: row;
+        justify-content: center;
+        gap: 15px;
+      }
+      .team-name {
+        font-size: 1.1rem;
+      }
+      .score-input {
+        width: 60px;
+        height: 50px;
+        font-size: 1.5rem;
+      }
+      .prediction-details {
+        grid-template-columns: 1fr;
+      }
+      .leaderboard-table th:nth-child(4), 
+      .leaderboard-table td:nth-child(4),
+      .leaderboard-table th:nth-child(5),
+      .leaderboard-table td:nth-child(5),
+      .leaderboard-table th:nth-child(6),
+      .leaderboard-table td:nth-child(6) {
+        display: none; /* Hide detailed stats on mobile */
+      }
+      .card {
+        padding: 15px;
       }
     }
 
