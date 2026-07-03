@@ -617,19 +617,34 @@
 
   <header>
     <div class="header-container">
-      <h1>🏆 <span>מונדיאל 2026 - הימורי חברים</span></h1>
-      <p class="subtitle">הימורי תוצאות המשחקים עד הגמר - חוויה אישית בין חברים. ללא הימורים כספיים!</p>
+      <h1>🏆 <span>מונדיאל 2026</span></h1>
+      <p class="subtitle">הימורי תוצאות וסטטיסטיקה בזמן אמת</p>
+      <div id="user-display" style="display:none; margin-top: 10px; background: rgba(0, 230, 118, 0.1); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--primary-color);">
+        שלום, <span id="current-user-name" style="font-weight: bold; color: var(--primary-color);"></span>
+        <button class="btn btn-secondary" onclick="logout()" style="padding: 2px 8px; font-size: 0.8rem; margin-right: 10px; border:none;">החלף משתמש</button>
+      </div>
     </div>
   </header>
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="modal-overlay" style="display: flex; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="max-width: 400px; width: 90%; text-align: center;">
+      <h2>ברוכים הבאים!</h2>
+      <p style="margin-bottom: 20px;">אנא הקלידו את שמכם כדי להיכנס ולהמר:</p>
+      <div style="display: flex; flex-direction: column; gap: 15px;">
+        <input type="text" id="login-name" class="form-input" placeholder="השם שלכם...">
+        <button class="btn" style="justify-content: center;" onclick="loginUser()">כניסה למערכת</button>
+      </div>
+    </div>
+  </div>
 
   <div class="container">
     <!-- Nav tabs -->
     <div class="nav-tabs">
       <button class="tab-btn active" onclick="switchTab('leaderboard')">📊 טבלת דירוג</button>
-      <button class="tab-btn" onclick="switchTab('guesses')">✍️ הזנת הימורים</button>
-      <button class="tab-btn" onclick="switchTab('admin')">⚙️ ניהול ותוצאות אמת</button>
-      <button class="tab-btn" onclick="switchTab('participants')">👥 משתתפים</button>
-      <button class="tab-btn" onclick="switchTab('rules')">📜 חוקים וניקוד</button>
+      <button class="tab-btn" onclick="switchTab('guesses')">✍️ ההימורים שלי</button>
+      <button class="tab-btn" onclick="switchTab('rules')">📜 חוקים</button>
+      <button id="admin-tab-btn" class="tab-btn" onclick="switchTab('admin')" style="display:none;">⚙️ ניהול</button>
     </div>
 
     <!-- 1. Leaderboard Panel -->
@@ -666,13 +681,7 @@
     <div id="panel-guesses" class="tab-panel">
       <div class="card">
         <div class="card-title">
-          <span>הזנת הימורי משתתף</span>
-          <div class="participant-selector-wrap" style="margin-bottom: 0; padding: 5px 10px;">
-            <label for="guess-participant-select" style="font-weight: 700;">בחר מנחש:</label>
-            <select id="guess-participant-select" class="select-dropdown" onchange="loadGuessesForParticipant()">
-              <!-- Options loaded dynamically -->
-            </select>
-          </div>
+          <span>ההימורים של: <span id="active-participant-name"></span></span>
         </div>
         
         <p style="margin-bottom: 20px; color: var(--text-muted); font-size: 0.95rem;">
@@ -691,8 +700,6 @@
         <div class="card-title">
           <span>ניהול משחקים ותוצאות אמת</span>
           <div style="display: flex; gap: 10px;">
-            <button class="btn btn-secondary" onclick="triggerImport()">📥 ייבוא קובץ נתונים</button>
-            <input type="file" id="import-file-input" style="display: none;" accept=".json" onchange="importData(event)">
             <button class="btn btn-danger" onclick="resetAllData()">🚨 איפוס כל הנתונים</button>
           </div>
         </div>
@@ -707,15 +714,10 @@
       </div>
     </div>
 
-    <!-- 4. Participants Panel -->
+    <!-- 4. Participants Panel (Visible only to Admin) -->
     <div id="panel-participants" class="tab-panel">
       <div class="card">
         <div class="card-title">ניהול משתתפים</div>
-        <div class="add-participant-form">
-          <input type="text" id="new-participant-name" class="form-input" placeholder="הקלידו שם של חבר/משתתף...">
-          <button class="btn" onclick="addParticipant()">➕ הוסף משתתף</button>
-        </div>
-
         <div class="participants-list" id="participants-list-container">
           <!-- Dynamically populated -->
         </div>
@@ -801,8 +803,60 @@
     let state = {
       participants: [],
       matches: JSON.parse(JSON.stringify(DEFAULT_MATCHES)),
-      predictions: {} // Format: { participantId: { matchId: { scoreA, scoreB, extraTime, penalties, winner } } }
+      predictions: {},
+      currentUser: null
     };
+
+    function loginUser() {
+      const nameInput = document.getElementById('login-name');
+      const name = nameInput.value.trim();
+      if (!name) {
+        alert("נא להזין שם");
+        return;
+      }
+
+      // Check if participant already exists
+      let p = state.participants.find(x => x.name === name);
+      if (!p) {
+        p = { id: 'p-' + Date.now(), name: name };
+        state.participants.push(p);
+      }
+
+      state.currentUser = p;
+      localStorage.setItem("mondial_user", JSON.stringify(p));
+      
+      document.getElementById('login-modal').style.display = 'none';
+      document.getElementById('user-display').style.display = 'block';
+      document.getElementById('current-user-name').innerText = p.name;
+      
+      // Admin check
+      if (name === 'אדמין' || name === 'admin') {
+        document.getElementById('admin-tab-btn').style.display = 'block';
+      }
+
+      saveState();
+      renderLeaderboard();
+      loadGuessesForParticipant();
+    }
+
+    function checkLogin() {
+      const storedUser = localStorage.getItem("mondial_user");
+      if (storedUser) {
+        state.currentUser = JSON.parse(storedUser);
+        document.getElementById('login-modal').style.display = 'none';
+        document.getElementById('user-display').style.display = 'block';
+        document.getElementById('current-user-name').innerText = state.currentUser.name;
+        
+        if (state.currentUser.name === 'אדמין' || state.currentUser.name === 'admin') {
+          document.getElementById('admin-tab-btn').style.display = 'block';
+        }
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("mondial_user");
+      location.reload();
+    }
 
     // Load from Backend on startup
     async function loadState() {
@@ -811,24 +865,18 @@
         if (response.ok) {
           const parsed = await response.json();
           if (parsed.participants && parsed.matches && parsed.predictions) {
-            state = parsed;
+            state.participants = parsed.participants;
+            state.matches = parsed.matches;
+            state.predictions = parsed.predictions;
             renderLeaderboard();
             loadGuessesForParticipant();
-          }
-        } else {
-          // Fallback to localStorage if server is down
-          const stored = localStorage.getItem("mondial_state_2026");
-          if (stored) {
-            state = JSON.parse(stored);
           }
         }
       } catch (e) {
         console.error("שגיאה בטעינת הנתונים מהשרת", e);
-        const stored = localStorage.getItem("mondial_state_2026");
-        if (stored) {
-          state = JSON.parse(stored);
-        }
       }
+
+      checkLogin();
 
       // If matches list size is different, merge or set
       if (!state.matches || state.matches.length === 0) {
@@ -847,7 +895,11 @@
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(state),
+          body: JSON.stringify({
+            participants: state.participants,
+            matches: state.matches,
+            predictions: state.predictions
+          }),
         });
       } catch (e) {
         console.error("שגיאה בשמירת הנתונים בשרת", e);
@@ -996,15 +1048,13 @@
     }
 
     function loadGuessesForParticipant() {
-      const select = document.getElementById("guess-participant-select");
-      const participantId = select.value;
+      if (!state.currentUser) return;
+      const participantId = state.currentUser.id;
+      const nameEl = document.getElementById("active-participant-name");
+      if (nameEl) nameEl.innerText = state.currentUser.name;
+
       const container = document.getElementById("guesses-matches-list");
       container.innerHTML = "";
-
-      if (!participantId) {
-        container.innerHTML = `<div class="empty-state">אנא צרו משתתף או בחרו משתתף מתוך הרשימה למעלה.</div>`;
-        return;
-      }
 
       // Render matches with input fields
       state.matches.forEach(match => {
@@ -1089,6 +1139,10 @@
     }
 
     function saveUserGuess(participantId, matchId) {
+      if (participantId !== state.currentUser?.id) {
+        alert("אינך יכול להמר עבור משתמש אחר!");
+        return;
+      }
       if (!state.predictions[participantId]) {
         state.predictions[participantId] = {};
       }
