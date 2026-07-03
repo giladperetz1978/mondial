@@ -643,6 +643,7 @@
     <div class="nav-tabs">
       <button class="tab-btn active" onclick="switchTab('leaderboard')">📊 טבלת דירוג</button>
       <button class="tab-btn" onclick="switchTab('guesses')">✍️ ההימורים שלי</button>
+      <button id="view-guesses-btn" class="tab-btn" onclick="switchTab('view-guesses')">🔍 הימורי חברים</button>
       <button class="tab-btn" onclick="switchTab('rules')">📜 חוקים</button>
       <button id="admin-tab-btn" class="tab-btn" onclick="switchTab('admin')" style="display:none;">⚙️ ניהול</button>
     </div>
@@ -714,17 +715,22 @@
       </div>
     </div>
 
-    <!-- 4. Participants Panel (Visible only to Admin) -->
-    <div id="panel-participants" class="tab-panel">
+    <!-- 4. View Others Guesses Panel -->
+    <div id="panel-view-guesses" class="tab-panel">
       <div class="card">
-        <div class="card-title">ניהול משתתפים</div>
-        <div class="participants-list" id="participants-list-container">
-          <!-- Dynamically populated -->
+        <div class="card-title">
+          <span>צפייה בהימורי חברים</span>
+          <select id="others-participant-select" class="form-input" style="max-width: 200px;" onchange="renderOthersGuesses()">
+            <!-- Loaded dynamically -->
+          </select>
+        </div>
+        <div id="others-guesses-list" class="matches-grid">
+          <div class="empty-state">בחר חבר כדי לראות את ההימורים שלו</div>
         </div>
       </div>
     </div>
 
-    <!-- 5. Rules Panel -->
+    <!-- 5. Admin Panel -->
     <div id="panel-rules" class="tab-panel">
       <div class="card">
         <div class="card-title">שיטת הניקוד והחוקים</div>
@@ -869,14 +875,19 @@
             state.matches = parsed.matches;
             state.predictions = parsed.predictions;
             renderLeaderboard();
-            loadGuessesForParticipant();
+            
+            // Critical fix: verify current user still exists after load
+            checkLogin();
+            
+            if (state.currentUser) {
+              loadGuessesForParticipant();
+            }
           }
         }
       } catch (e) {
         console.error("שגיאה בטעינת הנתונים מהשרת", e);
+        checkLogin();
       }
-
-      checkLogin();
 
       // If matches list size is different, merge or set
       if (!state.matches || state.matches.length === 0) {
@@ -934,13 +945,57 @@
       if (tabId === "leaderboard") {
         renderLeaderboard();
       } else if (tabId === "guesses") {
-        populateParticipantsDropdown();
         loadGuessesForParticipant();
+      } else if (tabId === "view-guesses") {
+        populateOthersDropdown();
       } else if (tabId === "admin") {
         renderAdminMatches();
-      } else if (tabId === "participants") {
-        renderParticipants();
       }
+    }
+
+    function populateOthersDropdown() {
+      const select = document.getElementById("others-participant-select");
+      if (!select) return;
+      select.innerHTML = '<option value="">בחר חבר...</option>';
+      state.participants.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.id;
+        option.innerText = p.name;
+        select.appendChild(option);
+      });
+    }
+
+    function renderOthersGuesses() {
+      const participantId = document.getElementById("others-participant-select").value;
+      const container = document.getElementById("others-guesses-list");
+      if (!participantId) {
+        container.innerHTML = '<div class="empty-state">בחר חבר כדי לראות את ההימורים שלו</div>';
+        return;
+      }
+
+      container.innerHTML = "";
+      const participant = state.participants.find(p => p.id === participantId);
+      const predictions = state.predictions[participantId] || {};
+
+      state.matches.forEach(match => {
+        const pred = predictions[match.id] || { scoreA: "-", scoreB: "-", extraTime: "-", penalties: "-", winner: "-" };
+        const card = document.createElement("div");
+        card.className = "match-card";
+        card.innerHTML = `
+          <div class="match-header">
+            <span>${match.stage} | ${match.teamA} VS ${match.teamB}</span>
+          </div>
+          <div class="match-body" style="padding: 10px;">
+            <div style="font-size: 1.5rem; font-weight: 800;">
+              ${pred.scoreA} : ${pred.scoreB}
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+              הארכה: ${pred.extraTime === 'yes' ? 'כן' : 'לא'} | פנדלים: ${pred.penalties === 'yes' ? 'כן' : 'לא'}
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
     }
 
     // --- Time Utility: Check if locked ---
