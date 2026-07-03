@@ -757,34 +757,66 @@
     ];
 
     // --- State Initialization ---
+    const BACKEND_URL = "http://YOUR_CONTABO_IP:3000/api/state"; // עדכן כאן את כתובת השרת שלך
+
     let state = {
       participants: [],
       matches: JSON.parse(JSON.stringify(DEFAULT_MATCHES)),
       predictions: {} // Format: { participantId: { matchId: { scoreA, scoreB, extraTime, penalties, winner } } }
     };
 
-    // Load from localStorage on startup
-    function loadState() {
-      const stored = localStorage.getItem("mondial_state_2026");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
+    // Load from Backend on startup
+    async function loadState() {
+      try {
+        const response = await fetch(BACKEND_URL);
+        if (response.ok) {
+          const parsed = await response.json();
           if (parsed.participants && parsed.matches && parsed.predictions) {
             state = parsed;
+            renderLeaderboard();
+            loadGuessesForParticipant();
           }
-        } catch (e) {
-          console.error("שגיאה בטעינת הנתונים מהזיכרון המקומי", e);
+        } else {
+          // Fallback to localStorage if server is down
+          const stored = localStorage.getItem("mondial_state_2026");
+          if (stored) {
+            state = JSON.parse(stored);
+          }
+        }
+      } catch (e) {
+        console.error("שגיאה בטעינת הנתונים מהשרת", e);
+        const stored = localStorage.getItem("mondial_state_2026");
+        if (stored) {
+          state = JSON.parse(stored);
         }
       }
+
       // If matches list size is different, merge or set
       if (!state.matches || state.matches.length === 0) {
         state.matches = JSON.parse(JSON.stringify(DEFAULT_MATCHES));
       }
     }
 
-    function saveState() {
+    async function saveState() {
+      // Save locally first
       localStorage.setItem("mondial_state_2026", JSON.stringify(state));
+
+      // Save to Backend
+      try {
+        await fetch(BACKEND_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(state),
+        });
+      } catch (e) {
+        console.error("שגיאה בשמירת הנתונים בשרת", e);
+      }
     }
+
+    // Auto refresh every 60 seconds
+    setInterval(loadState, 60000);
 
     function showToast(message) {
       const toast = document.getElementById("toast");
