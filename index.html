@@ -1089,15 +1089,21 @@
             </div>
             <div>
               <div class="score-input-wrap">
-                <input type="number" min="0" placeholder="-" class="score-input" 
-                       id="guess-${match.id}-A" value="${userPred.scoreA}" 
-                       ${isLocked ? 'disabled' : ''} 
-                       onchange="saveUserGuess('${participantId}', '${match.id}')">
-                <span class="vs-divider">:</span>
-                <input type="number" min="0" placeholder="-" class="score-input" 
-                       id="guess-${match.id}-B" value="${userPred.scoreB}" 
-                       ${isLocked ? 'disabled' : ''} 
-                       onchange="saveUserGuess('${participantId}', '${match.id}')">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                  <span style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">${match.teamA}</span>
+                  <input type="number" min="0" placeholder="-" class="score-input" 
+                         id="guess-${match.id}-A" value="${userPred.scoreA}" 
+                         ${isLocked ? 'disabled' : ''} 
+                         onchange="saveUserGuess('${participantId}', '${match.id}')">
+                </div>
+                <span class="vs-divider" style="padding-top: 15px;">:</span>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                  <span style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">${match.teamB}</span>
+                  <input type="number" min="0" placeholder="-" class="score-input" 
+                         id="guess-${match.id}-B" value="${userPred.scoreB}" 
+                         ${isLocked ? 'disabled' : ''} 
+                         onchange="saveUserGuess('${participantId}', '${match.id}')">
+                </div>
               </div>
             </div>
             <div class="team-section">
