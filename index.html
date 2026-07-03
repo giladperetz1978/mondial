@@ -804,7 +804,7 @@
     ];
 
     // --- State Initialization ---
-    const BACKEND_URL = "http://144.91.96.77:3000/api/state"; // עדכן כאן את כתובת השרת שלך
+    const BACKEND_URL = "http://144.91.96.77:3000/api/state"; // חזרה לאיפי שלך
 
     let state = {
       participants: [],
@@ -866,30 +866,29 @@
 
     // Load from Backend on startup
     async function loadState() {
+      console.log("Loading state from backend...");
       try {
         const response = await fetch(BACKEND_URL);
         if (response.ok) {
           const parsed = await response.json();
-          if (parsed.participants && parsed.matches && parsed.predictions) {
+          console.log("Data received from backend:", parsed);
+          // Only override local state if backend has data
+          if (parsed.participants && parsed.participants.length > 0) {
             state.participants = parsed.participants;
-            state.matches = parsed.matches;
-            state.predictions = parsed.predictions;
+            state.matches = parsed.matches || state.matches;
+            state.predictions = parsed.predictions || {};
             renderLeaderboard();
-            
-            // Critical fix: verify current user still exists after load
-            checkLogin();
-            
-            if (state.currentUser) {
-              loadGuessesForParticipant();
-            }
           }
         }
       } catch (e) {
         console.error("שגיאה בטעינת הנתונים מהשרת", e);
-        checkLogin();
+      }
+      
+      checkLogin();
+      if (state.currentUser) {
+        loadGuessesForParticipant();
       }
 
-      // If matches list size is different, merge or set
       if (!state.matches || state.matches.length === 0) {
         state.matches = JSON.parse(JSON.stringify(DEFAULT_MATCHES));
       }

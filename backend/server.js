@@ -37,9 +37,14 @@ const writeState = (state) => {
 
 // GET current state
 app.get('/api/state', (req, res) => {
-    const state = readState();
+    let state = readState();
     if (!state) {
-        return res.status(404).json({ error: "State not found" });
+        // Return a default state instead of 404 if file doesn't exist yet
+        state = {
+            participants: [],
+            matches: [], // Frontend will merge with DEFAULT_MATCHES
+            predictions: {}
+        };
     }
     res.json(state);
 });
