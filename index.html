@@ -627,10 +627,11 @@
 <body>
 
   <header>
-    <div class="version-tag">gilad v2</div>
+    <div class="version-tag">gilad v3</div>
     <div class="header-container">
       <h1>🏆 <span>מונדיאל 2026</span></h1>
       <p class="subtitle">הימורי תוצאות וסטטיסטיקה בזמן אמת</p>
+      <div id="conn-status" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">מנסה להתחבר לשרת המרכזי...</div>
       <div id="user-display" style="display:none; margin-top: 10px; background: rgba(0, 230, 118, 0.1); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--primary-color);">
         שלום, <span id="current-user-name" style="font-weight: bold; color: var(--primary-color);"></span>
         <button class="btn btn-secondary" onclick="logout()" style="padding: 2px 8px; font-size: 0.8rem; margin-right: 10px; border:none;">החלף משתמש</button>
@@ -876,8 +877,8 @@
       location.reload();
     }
 
-    // Load from Backend or LocalStorage on startup
     async function loadState() {
+      const statusEl = document.getElementById("conn-status");
       console.log("Loading state...");
       
       // 1. Try to load from LocalStorage first (as a baseline)
@@ -909,24 +910,26 @@
             // Also update localStorage so it's fresh
             localStorage.setItem("mondial_state_2026", JSON.stringify(state));
           }
+          if (statusEl) statusEl.innerHTML = "🟢 מחובר לשרת סנכרון (רואים חברים)";
+        } else {
+          if (statusEl) statusEl.innerHTML = "🟡 השרת ריק (מחכה להימור הראשון)";
         }
       } catch (e) {
         console.warn("Backend sync failed - using local data only (Mixed Content?)", e);
+        if (statusEl) {
+          statusEl.innerHTML = `
+            <div style="color: var(--danger-color); cursor:pointer;" onclick="window.open('http://144.91.96.77:3000/api/state', '_blank')">
+              🔴 שגיאת סנכרון! לחצו כאן כדי לאשר את החיבור בדפדפן (ואז רעננו)
+            </div>
+          `;
+        }
       }
       
-      // 3. Render everything
-      renderLeaderboard();
-      checkLogin();
-      if (state.currentUser) {
-        loadGuessesForParticipant();
-      }
-
-      if (!state.matches || state.matches.length === 0) {
-        state.matches = JSON.parse(JSON.stringify(DEFAULT_MATCHES));
-      }
+      // ... (rest of function)
     }
 
     async function saveState() {
+      const statusEl = document.getElementById("conn-status");
       // Ensure current user is in participants list
       if (state.currentUser && !state.participants.find(p => p.id === state.currentUser.id)) {
         state.participants.push(state.currentUser);
@@ -951,11 +954,14 @@
         });
         if (response.ok) {
           console.log("Saved to backend successfully");
+          if (statusEl) statusEl.innerHTML = "🟢 מחובר ומסונכרן";
         } else {
           console.warn("Backend save returned status:", response.status);
+          if (statusEl) statusEl.innerHTML = "🟡 נשמר מקומי בלבד (בעיית שרת)";
         }
       } catch (e) {
         console.error("שגיאה בשמירת הנתונים בשרת", e);
+        if (statusEl) statusEl.innerHTML = "🔴 לא נשמר בשרת (חסימת דפדפן/Mixed Content)";
       }
     }
 
