@@ -627,7 +627,7 @@
 <body>
 
   <header>
-    <div class="version-tag">gilad v3</div>
+    <div class="version-tag">gilad v4</div>
     <div class="header-container">
       <h1>🏆 <span>מונדיאל 2026</span></h1>
       <p class="subtitle">הימורי תוצאות וסטטיסטיקה בזמן אמת</p>
@@ -881,6 +881,9 @@
       const statusEl = document.getElementById("conn-status");
       console.log("Loading state...");
       
+      // 0. Ensure login state is restored first
+      checkLogin();
+
       // 1. Try to load from LocalStorage first (as a baseline)
       const localData = localStorage.getItem("mondial_state_2026");
       if (localData) {
