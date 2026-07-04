@@ -627,11 +627,11 @@
 <body>
 
   <header>
-    <div class="version-tag">gilad v4</div>
+    <div class="version-tag">gilad v6</div>
     <div class="header-container">
       <h1>🏆 <span>מונדיאל 2026</span></h1>
       <p class="subtitle">הימורי תוצאות וסטטיסטיקה בזמן אמת</p>
-      <div id="conn-status" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">מנסה להתחבר לשרת המרכזי...</div>
+      <div id="conn-status" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">בדיקת חיבור (v6)...</div>
       <div id="user-display" style="display:none; margin-top: 10px; background: rgba(0, 230, 118, 0.1); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--primary-color);">
         שלום, <span id="current-user-name" style="font-weight: bold; color: var(--primary-color);"></span>
         <button class="btn btn-secondary" onclick="logout()" style="padding: 2px 8px; font-size: 0.8rem; margin-right: 10px; border:none;">החלף משתמש</button>
@@ -789,6 +789,15 @@
   <script>
     // --- Initial / Default Match Schedule Starting July 4th, 2026 ---
     const DEFAULT_MATCHES = [
+      // Round of 32 - Selected Results (Added for completeness)
+      { id: "R32-1", stage: "32 האחרונות", teamA: "קנדה", teamB: "דרום אפריקה", time: "2026-06-28T19:00:00+03:00", scoreA: 1, scoreB: 0, extraTime: "no", penalties: "no", winner: "A", location: "לוס אנג'לס" },
+      { id: "R32-2", stage: "32 האחרונות", teamA: "נורווגיה", teamB: "חוף השנהב", time: "2026-06-29T23:00:00+03:00", scoreA: 2, scoreB: 1, extraTime: "no", penalties: "no", winner: "A", location: "בוסטון" },
+      { id: "R32-3", stage: "32 האחרונות", teamA: "צרפת", teamB: "שוודיה", time: "2026-06-30T19:00:00+03:00", scoreA: 3, scoreB: 0, extraTime: "no", penalties: "no", winner: "A", location: "ניו ג'רזי" },
+      { id: "R32-4", stage: "32 האחרונות", teamA: "ארה\"ב", teamB: "בוסניה", time: "2026-07-01T23:00:00+03:00", scoreA: 2, scoreB: 0, extraTime: "no", penalties: "no", winner: "A", location: "דאלאס" },
+      { id: "R32-5", stage: "32 האחרונות", teamA: "ארגנטינה", teamB: "כף ורדה", time: "2026-07-02T19:00:00+03:00", scoreA: 3, scoreB: 2, extraTime: "yes", penalties: "no", winner: "A", location: "מיאמי" },
+      { id: "R32-6", stage: "32 האחרונות", teamA: "אוסטרליה", teamB: "מצרים", time: "2026-07-03T19:00:00+03:00", scoreA: 1, scoreB: 1, extraTime: "yes", penalties: "yes", winner: "B", location: "דאלאס" },
+      { id: "R32-7", stage: "32 האחרונות", teamA: "קולומביה", teamB: "גאנה", time: "2026-07-03T23:00:00+03:00", scoreA: 1, scoreB: 0, extraTime: "no", penalties: "no", winner: "A", location: "טורונטו" },
+
       // Round of 16
       { id: "R16-1", stage: "שמינית גמר", teamA: "קנדה", teamB: "מרוקו", time: "2026-07-04T19:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "יוסטון" },
       { id: "R16-2", stage: "שמינית גמר", teamA: "פרגוואי", teamB: "צרפת", time: "2026-07-04T23:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "פילדלפיה" },
@@ -796,8 +805,8 @@
       { id: "R16-4", stage: "שמינית גמר", teamA: "מקסיקו", teamB: "אנגליה", time: "2026-07-05T23:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "מקסיקו סיטי" },
       { id: "R16-5", stage: "שמינית גמר", teamA: "ספרד", teamB: "פורטוגל", time: "2026-07-06T19:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "ארלינגטון" },
       { id: "R16-6", stage: "שמינית גמר", teamA: "ארה\"ב", teamB: "בלגיה", time: "2026-07-06T23:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "סיאטל" },
-      { id: "R16-7", stage: "שמינית גמר", teamA: "מנצחת משחק 79", teamB: "מנצחת משחק 80", time: "2026-07-07T19:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "אטלנטה" },
-      { id: "R16-8", stage: "שמינית גמר", teamA: "מנצחת משחק 81", teamB: "מנצחת משחק 82", time: "2026-07-07T23:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "לוס אנג'לס" },
+      { id: "R16-7", stage: "שמינית גמר", teamA: "ארגנטינה", teamB: "מצרים", time: "2026-07-07T19:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "אטלנטה" },
+      { id: "R16-8", stage: "שמינית גמר", teamA: "שוויץ", teamB: "קולומביה", time: "2026-07-07T23:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "וונקובר" },
       
       // Quarterfinals
       { id: "QF-1", stage: "רבע גמר", teamA: "מנצחת שמינית 1", teamB: "מנצחת שמינית 2", time: "2026-07-09T20:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "בוסטון" },
@@ -813,7 +822,7 @@
       { id: "TP-1", stage: "משחק על מקום 3", teamA: "מפסידה חצי 1", teamB: "מפסידה חצי 2", time: "2026-07-18T22:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "מיאמי" },
 
       // Final
-      { id: "F-1", stage: "הגמר הגדול", teamA: "מנצחת חצי 1", teamB: "מנצחת חצי 2", time: "2026-07-19T22:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "ניו יורק / ניו ג'רזי" }
+      { id: "F-1", stage: "הגמר הגדול", teamA: "מנצחת חצי 1", teamB: "מנצחת חצי 2", time: "2026-07-19T22:00:00+03:00", scoreA: null, scoreB: null, extraTime: null, penalties: null, winner: null, location: "מטלייף סטאדיום" }
     ];
 
     // --- State Initialization ---
